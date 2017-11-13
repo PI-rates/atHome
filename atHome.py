@@ -34,7 +34,7 @@ while (1):
 
     os.system("nmap -sP 192.168.1.1-255 | grep -E 'android-8f93|Honor_8|iPhonedethomas' > nmap.txt")
     # ========= VINCENT =========
-    nmap_vincent = os.popen("grep 'android-8f93' nmap.txt")
+    nmap_vincent = os.popen("grep 'android-8f93' nmap.txt").readlines()
 
     if nmap_vincent == [] and vincent == 1:
         vincent = 0
@@ -45,7 +45,7 @@ while (1):
         chgt = 1
 
     # ========= PIERRE =========
-    nmap_pierre = os.popen("grep 'Honor_8' nmap.txt")
+    nmap_pierre = os.popen("grep 'Honor_8' nmap.txt").readlines()
 
     if nmap_pierre == [] and pierre == 1:
         pierre = 0
@@ -56,7 +56,7 @@ while (1):
         chgt = 1
 
     # ========= THOMAS =========
-    nmap_thomas = os.popen("grep 'iPhonedethomas' nmap.txt")
+    nmap_thomas = os.popen("grep 'iPhonedethomas' nmap.txt").readlines()
 
     if nmap_thomas == [] and thomas == 1:
         thomas = 0
