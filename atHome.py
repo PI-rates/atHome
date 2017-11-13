@@ -1,47 +1,41 @@
 #!/usr/bin/python
 #
-# Alume diode ARDUINO si la personne est connectee au WIFI.
-# Utilisation de la commande NMAP 
-#
+# Alume diode connectée au GPIO Raspberry PI si la personne est connectee au WIFI.
+# Utilisation de la commande NMAP
 
 import os
-import time
+import RPi.GPIO as GPIO
 
+# --- Numero de Pin pour chaque personne ----
+ledPin_thomas = 1
+ledPin_pierre = 2
+ledPin_vincent = 3
+
+# --- Initialisation GPIO ----
+GPIO.setmode(GPIO.BCM)
+
+GPIO.setup(ledPin_pierre, GPIO.OUT, initial=GPIO.LOW)
+GPIO.setup(ledPin_thomas, GPIO.OUT, initial=GPIO.LOW)
+GPIO.setup(ledPin_vincent, GPIO.OUT, initial=GPIO.LOW)
+
+# --- Variable pour chaque personne ---
 vincent = 0
 pierre = 0
 thomas= 0
-# ====  data =============
-cpp_code = """#include <Arduino.h>
 
-int ledPin_vincent = 3;
-int ledPin_pierre = 4;
-int ledPin_thomas = 5;
 
-void setup() {
-    pinMode(ledPin_vincent, OUTPUT);
-    pinMode(ledPin_pierre, OUTPUT);
-    pinMode(ledPin_thomas, OUTPUT);
-    digitalWrite(ledPin_vincent, %d);
-    digitalWrite(ledPin_pierre, %d);
-    digitalWrite(ledPin_thomas, %d);
-};
-
-void loop(){};
-"""
-
-nmap_cmd = "nmap -sP 192.168.1.1-255 | grep %s"
-
-# ======== Initialize ==========
-with open("main.cpp", "w") as f:
-    f.write(cpp_code %(0, 0, 0))
-os.system("make upload -s")
+# ====================================
+# ======== SCAN DU RESEAU ============
+# ====================================
 
 while (1):
 
     chgt = 0
+
+    os.system("nmap -sP 192.168.1.1-255 | grep -E 'android-8f93|Honor_8|iPhonedethomas' > nmap.txt")
     # ========= VINCENT =========
-    nmap_vincent = os.popen(nmap_cmd %("android-8f93")).readlines()
-    
+    nmap_vincent = os.popen("grep 'android-8f93' nmap.txt")
+
     if nmap_vincent == [] and vincent == 1:
         vincent = 0
         chgt = 1
@@ -49,9 +43,9 @@ while (1):
     elif nmap_vincent != [] and vincent == 0:
         vincent = 1
         chgt = 1
-    
+
     # ========= PIERRE =========
-    nmap_pierre = os.popen(nmap_cmd %("Honor_8")).readlines()
+    nmap_pierre = os.popen("grep 'Honor_8' nmap.txt")
 
     if nmap_pierre == [] and pierre == 1:
         pierre = 0
@@ -62,7 +56,7 @@ while (1):
         chgt = 1
 
     # ========= THOMAS =========
-    nmap_thomas = os.popen(nmap_cmd %("iPhonedethomas")).readlines()
+    nmap_thomas = os.popen("grep 'iPhonedethomas' nmap.txt")
 
     if nmap_thomas == [] and thomas == 1:
         thomas = 0
@@ -74,9 +68,9 @@ while (1):
     #===========================
 
 
-    if chgt == 1: 
-        with open("main.cpp", "w") as f:
-            f.write(cpp_code %(vincent, pierre, thomas))
+    if chgt == 1:
+        GPIO.output(ledPin_thomas, thomas)
+        GPIO.output(ledPin_pierre, pierre)
+        GPIO.output(ledPin_vincent, vincent)
 
-        os.system("make upload -s")
     print('OK')
